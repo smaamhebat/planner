@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planner Guru Profesional - Full Interactive</title>
+    <!-- Font Inter untuk kekemasan -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Tema Warna Cerdas Visual+ */
+            --bg-dark: #2c3e50;
+            --paper: #fcfbf9;
+            --sidebar-bg: #ecf0f1;
+            --pastel-blue: #d6eaf8; /* Biru lembut */
+            --pastel-green: #d5f5e3; /* Hijau lembut */
+            --accent-blue: #5dade2;
+            --accent-green: #58d68d;
+            --text-dark: #2c3e50;
+            --text-grey: #7f8c8d;
+            --line: #bdc3c7;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a1a; /* Latar belakang meja gelap */
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* Bingkai Utama iPad */
+        .ipad-frame {
+            width: 96vw;
+            height: 92vh;
+            background: #000;
+            border-radius: 25px;
+            padding: 12px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            display: flex;
+            border: 4px solid #333;
+            position: relative;
+        }
+
+        /* Container Dalaman */
+        .app-container {
+            flex: 1;
+            background: var(--paper);
+            border-radius: 15px;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* KANDUNGAN HALAMAN (KIRI) */
+        .content-area {
+            flex: 1;
+            position: relative;
+            overflow-y: auto;
+            padding: 30px 40px;
+            scroll-behavior: smooth;
+        }
+
+        /* Styling Scrollbar */
+        .content-area::-webkit-scrollbar { width: 8px; }
+        .content-area::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+
+        /* TAB NAVIGASI (KANAN) */
+        .sidebar {
+            width: 70px;
+            background: var(--sidebar-bg);
+            border-left: 1px solid #ddd;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 20px;
+            gap: 10px;
+            z-index: 20;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.05);
+        }
+
+        .nav-tab {
+            width: 100%;
+            padding: 15px 5px;
+            cursor: pointer;
+            writing-mode: vertical-rl; /* Teks menegak */
+            text-orientation: mixed;
+            text-align: center;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: var(--text-grey);
+            background: white;
+            border-radius: 8px 0 0 8px;
+            transition: all 0.3s ease;
+            margin-right: -1px; /* Supaya bercantum dengan garis */
+            border: 1px solid transparent;
+        }
+
+        .nav-tab:hover {
+            color: var(--text-dark);
+            transform: translateX(-3px);
+        }
+
+        .nav-tab.active {
+            background: var(--paper);
+            color: var(--text-dark);
+            border-left: 5px solid var(--accent-blue);
+            width: 75px; /* Lebih lebar sedikit bila aktif */
+            box-shadow: -5px 0 10px rgba(0,0,0,0.05);
+            margin-left: -5px;
+            position: relative;
+            z-index: 30;
+        }
+        
+        .nav-tab.section-school.active { border-left-color: var(--accent-green); }
+
+        /* HALAMAN (PAGES) */
+        .page-section {
+            display: none; /* Semua sembunyi default */
+            animation: fadeIn 0.4s ease-in-out;
+        }
+        .page-section.active-view {
+            display: block; /* Papar bila aktif */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- STYLES ELEMEN DALAM --- */
+        h1, h2 { color: var(--text-dark); margin-bottom: 15px; }
+        .header-line {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 2px solid var(--line); margin-bottom: 20px; padding-bottom: 10px;
+        }
+
+        /* Kotak / Card */
+        .card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+        }
+        .card-title {
+            font-size: 0.85rem; font-weight: 700; text-transform: uppercase;
+            color: var(--text-grey); margin-bottom: 10px; display: block;
+        }
+        .bg-blue { background: var(--pastel-blue); }
+        .bg-green { background: var(--pastel-green); }
+
+        /* Grid Layouts */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .grid-7 { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+
+        /* Inputs */
+        input[type="text"], textarea, .editable {
+            width: 100%; border: none; background: transparent;
+            border-bottom: 1px dashed #ccc; font-family: 'Inter', sans-serif;
+            padding: 5px 0; outline: none; font-size: 0.95rem;
+        }
+        textarea { resize: none; }
+        
+        /* Checkbox List */
+        .check-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--accent-blue); cursor: pointer; }
+
+        /* Jadual */
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; font-size: 0.8rem; color: var(--text-grey); padding: 5px; border-bottom: 2px solid #eee; }
+        td { padding: 5px; border-bottom: 1px solid #f0f0f0; }
+
+    </style>
+</head>
+<body>
+
+    <div class="ipad-frame">
+        <div class="app-container">
+            
+            <!-- BAHAGIAN KIRI: KANDUNGAN (PAGES) -->
+            <div class="content-area">
+
+                <!-- 1. YEARLY PAGE -->
+                <div id="view-yearly" class="page-section">
+                    <div class="header-line">
+                        <h2>📅 TAHUNAN (YEARLY OVERVIEW)</h2>
+                        <span style="font-size:2rem; color:#ddd;">2024/25</span>
+                    </div>
+                    
+                    <div class="grid-2">
+                        <div class="card bg-blue">
+                            <span class="card-title" style="color:#2980b9">🏆 BIG GOALS TAHUN INI</span>
+                            <div class="check-row"><input type="checkbox"><input type="text" placeholder="Goal Utama 1"></div>
+                            <div class="check-row"><input type="checkbox"><input type="text" placeholder="Goal Utama 2"></div>
+                            <div class="check-row"><input type="checkbox"><input type="text" placeholder="Goal Utama 3"></div>
+                        </div>
+                        <div class="card bg-green">
+                            <span class="card-title" style="color:#27ae60">📌 PERISTIWA PENTING</span>
+                            <textarea rows="4" placeholder="Contoh: Hari Sukan, Peperiksaan Akhir Tahun..."></textarea>
+                        </div>
+                    </div>
+
+                    <span class="card-title">KALENDAR PANTAS</span>
+                    <div class="grid-4">
+                        <div class="card" style="text-align:center;">JAN - MAC <br><small>Sesi Awal</small></div>
+                        <div class="card" style="text-align:center;">APR - JUN <br><small>Pertengahan</small></div>
+                        <div class="card" style="text-align:center;">JUL - SEP <br><small>Sukan/Koko</small></div>
+                        <div class="card" style="text-align:center;">OKT - DIS <br><small>Akhir/Cuti</small></div>
+                    </div>
+                </div>
+
+                <!-- 2. MONTHLY PAGE -->
+                <div id="view-monthly" class="page-section">
+                    <div class="header-line">
+                        <h2>📆 BULANAN (MONTHLY)</h2>
+                        <div style="font-weight:bold; color:var(--accent-blue);">OGOS</div>
+                    </div>
+                    <div class="grid-2" style="grid-template-columns: 3fr 1fr;">
+                        <!-- Kalendar Grid -->
+                        <div class="card">
+                            <div class="grid-7" style="text-align: center; font-weight:bold; margin-bottom:10px;">
+                                <div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div>
+                            </div>
+                            <div class="grid-7">
+                                <!-- Generate kotak kosong untuk kalendar -->
+                                <script>
+                                    for(let i=1; i<=35; i++){
+                                        document.write(`<div style="height:60px; border:1px solid #f0f0f0; padding:2px; font-size:12px;" contenteditable="true">${i<=31?i:''}</div>`);
+                                    }
+                                </script>
+                            </div>
+                        </div>
+                        <!-- Sidebar Bulanan -->
+                        <div>
+                            <div class="card bg-blue">
+                                <span class="card-title">FOKUS BULAN INI</span>
+                                <textarea rows="3"></textarea>
+                            </div>
+                            <div class="card">
+                                <span class="card-title">MOOD TRACKER</span>
+                                <div style="font-size:1.5rem; display:flex; justify-content:space-around; cursor:pointer;">
+                                    <span>😁</span><span>😐</span><span>😫</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. WEEKLY PAGE -->
+                <div id="view-weekly" class="page-section">
+                    <div class="header-line">
+                        <h2>🗓️ MINGGUAN (WEEKLY)</h2>
+                        <input type="text" placeholder="Minggu ke-..." style="width:100px; text-align:right;">
+                    </div>
+                    <div class="grid-2" style="grid-template-columns: 1fr 2fr;">
+                        <!-- Sidebar Minggu -->
+                        <div>
+                            <div class="card bg-green">
+                                <span class="card-title">PRIORITIES</span>
+                                <div class="check-row"><input type="checkbox"><input type="text"></div>
+                                <div class="check-row"><input type="checkbox"><input type="text"></div>
+                                <div class="check-row"><input type="checkbox"><input type="text"></div>
+                            </div>
+                            <div class="card">
+                                <span class="card-title">HABIT TRACKER</span>
+                                <div class="check-row"><input type="checkbox"> Datang Awal</div>
+                                <div class="check-row"><input type="checkbox"> Minum Air</div>
+                                <div class="check-row"><input type="checkbox"> RPH Siap</div>
+                            </div>
+                        </div>
+                        <!-- Hari Minggu -->
+                        <div style="display:grid; gap:10px;">
+                            <div class="card" style="padding:10px;"><strong style="color:var(--accent-blue)">ISNIN</strong> <input type="text"></div>
+                            <div class="card" style="padding:10px;"><strong style="color:var(--accent-blue)">SELASA</strong> <input type="text"></div>
+                            <div class="card" style="padding:10px;"><strong style="color:var(--accent-blue)">RABU</strong> <input type="text"></div>
+                            <div class="card" style="padding:10px;"><strong style="color:var(--accent-blue)">KHAMIS</strong> <input type="text"></div>
+                            <div class="card" style="padding:10px;"><strong style="color:var(--accent-blue)">JUMAAT</strong> <input type="text"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. DAILY PAGE (DEFAULT) -->
+                <div id="view-daily" class="page-section active-view">
+                    <div class="header-line">
+                        <h2>📝 HARIAN (DAILY PLANNER)</h2>
+                        <div>
+                            <span style="margin-right:10px; font-weight:600;">HARI:</span>
+                            <span style="background:var(--accent-blue); color:white; padding:2px 8px; border-radius:50%; font-size:12px;">M</span>
+                            <span style="background:#eee; padding:2px 8px; border-radius:50%; font-size:12px;">T</span>
+                            <span style="background:#eee; padding:2px 8px; border-radius:50%; font-size:12px;">W</span>
+                        </div>
+                    </div>
+                    <div class="grid-2">
+                        <!-- Kolom Kiri -->
+                        <div>
+                            <div class="card" style="border-top: 4px solid var(--accent-blue);">
+                                <span class="card-title">🎯 DAILY GOALS</span>
+                                <input type="text" placeholder="1. "><br>
+                                <input type="text" placeholder="2. "><br>
+                                <input type="text" placeholder="3. ">
+                            </div>
+                            <div class="card">
+                                <span class="card-title" style="color:green;">✅ TO-DO LIST</span>
+                                <div class="check-row"><input type="checkbox"><input type="text"></div>
+                                <div class="check-row"><input type="checkbox"><input type="text"></div>
+                                <div class="check-row"><input type="checkbox"><input type="text"></div>
+                                <div class="check-row"><input type="checkbox"><input type="text"></div>
+                                <div class="check-row"><input type="checkbox"><input type="text"></div>
+                            </div>
+                            <div class="card bg-blue">
+                                <span class="card-title">NOTES & REFLECTION</span>
+                                <textarea rows="5" style="border-bottom:none;"></textarea>
+                            </div>
+                        </div>
+                        <!-- Kolom Kanan: Jadual Masa -->
+                        <div class="card" style="height:fit-content;">
+                            <span class="card-title">⏳ SCHEDULE</span>
+                            <table style="font-size:0.9rem;">
+                                <tr><td width="50">07:00</td><td><input type="text" value="Perhimpunan / Masuk Kelas"></td></tr>
+                                <tr><td>08:00</td><td><input type="text"></td></tr>
+                                <tr><td>09:00</td><td><input type="text"></td></tr>
+                                <tr><td style="background:var(--pastel-green);">10:00</td><td style="background:var(--pastel-green); font-weight:bold;">REHAT</td></tr>
+                                <tr><td>11:00</td><td><input type="text"></td></tr>
+                                <tr><td>12:00</td><td><input type="text"></td></tr>
+                                <tr><td>13:00</td><td><input type="text"></td></tr>
+                                <tr><td>14:00</td><td><input type="text"></td></tr>
+                                <tr><td>15:00</td><td><input type="text"></td></tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. UNIT PENTADBIRAN -->
+                <div id="view-admin" class="page-section">
+                    <div class="header-line">
+                        <h2>💼 PENTADBIRAN</h2>
+                    </div>
+                    <div class="grid-2">
+                        <div class="card">
+                            <span class="card-title">OBJEKTIF MINGGUAN</span>
+                            <textarea rows="4"></textarea>
+                        </div>
+                        <div class="card bg-green">
+                            <span class="card-title">TINDAKAN SEGERA</span>
+                            <div class="check-row"><input type="checkbox"><input type="text" style="color:red; font-weight:bold;"></div>
+                            <div class="check-row"><input type="checkbox"><input type="text"></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <span class="card-title">MESYUARAT / TAKLIMAT</span>
+                        <table>
+                            <tr><th>Perkara</th><th>Tarikh</th><th>Catatan</th></tr>
+                            <tr><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td></tr>
+                            <tr><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td></tr>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 6. UNIT KURIKULUM -->
+                <div id="view-kuri" class="page-section">
+                    <div class="header-line">
+                        <h2>📘 KURIKULUM</h2>
+                    </div>
+                    <div class="grid-2">
+                        <div class="card">
+                            <span class="card-title">RANCANGAN PENGAJARAN (RPH)</span>
+                            <textarea rows="5" placeholder="Refleksi atau perancangan..."></textarea>
+                        </div>
+                        <div class="card bg-blue">
+                            <span class="card-title">PEMANTAUAN PBD</span>
+                            <div class="check-row"><input type="checkbox"> Key-in Data T.1</div>
+                            <div class="check-row"><input type="checkbox"> Key-in Data T.2</div>
+                            <div class="check-row"><input type="checkbox"> Semak Latihan</div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <span class="card-title">ANALISIS & INTERVENSI MURID</span>
+                        <input type="text" placeholder="Nama murid yang perlu perhatian:">
+                    </div>
+                </div>
+
+                <!-- 7. UNIT KOKURIKULUM -->
+                <div id="view-koq" class="page-section">
+                    <div class="header-line">
+                        <h2>⚽ KOKURIKULUM</h2>
+                    </div>
+                    <div class="grid-3">
+                        <div class="card">
+                            <span class="card-title">UNIT BERUNIFORM</span>
+                            <input type="text" placeholder="Nama Unit">
+                            <textarea rows="3" placeholder="Aktiviti..."></textarea>
+                        </div>
+                        <div class="card">
+                            <span class="card-title">KELAB & PERSATUAN</span>
+                            <input type="text" placeholder="Nama Kelab">
+                            <textarea rows="3" placeholder="Aktiviti..."></textarea>
+                        </div>
+                        <div class="card">
+                            <span class="card-title">SUKAN & PERMAINAN</span>
+                            <input type="text" placeholder="Nama Sukan">
+                            <textarea rows="3" placeholder="Aktiviti..."></textarea>
+                        </div>
+                    </div>
+                    <div class="card bg-green">
+                        <span class="card-title">LAPORAN RINGKAS / KEHADIRAN</span>
+                        <textarea rows="2"></textarea>
+                    </div>
+                </div>
+
+                <!-- 8. UNIT HEM -->
+                <div id="view-hem" class="page-section">
+                    <div class="header-line">
+                        <h2>🎓 HAL EHWAL MURID (HEM)</h2>
+                    </div>
+                    <div class="grid-2">
+                        <div class="card">
+                            <span class="card-title">KEHADIRAN MURID HARI INI</span>
+                            <div class="grid-2">
+                                <div>Hadir: <input type="number" style="width:60px; font-weight:bold;"></div>
+                                <div>Tidak Hadir: <input type="number" style="width:60px; color:red;"></div>
+                            </div>
+                        </div>
+                        <div class="card bg-blue">
+                            <span class="card-title">PROGRAM HEM / KEBAJIKAN</span>
+                            <div class="check-row"><input type="checkbox"> RMT</div>
+                            <div class="check-row"><input type="checkbox"> SPBT</div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <span class="card-title">ISU DISIPLIN & TINDAKAN</span>
+                        <textarea rows="4" placeholder="Catatan kes..."></textarea>
+                    </div>
+                </div>
+
+            </div> <!-- Tamat Content Area -->
+
+            <!-- BAHAGIAN KANAN: TAB NAVIGASI -->
+            <div class="sidebar">
+                <!-- Navigasi Utama -->
+                <div class="nav-tab" onclick="openPage('view-yearly', this)">YEARLY</div>
+                <div class="nav-tab" onclick="openPage('view-monthly', this)">MONTHLY</div>
+                <div class="nav-tab" onclick="openPage('view-weekly', this)">WEEKLY</div>
+                <div class="nav-tab active" onclick="openPage('view-daily', this)">DAILY</div>
+                
+                <div style="height:20px;"></div> <!-- Jarak -->
+
+                <!-- Navigasi Unit Sekolah -->
+                <div class="nav-tab section-school" onclick="openPage('view-admin', this)">ADMIN</div>
+                <div class="nav-tab section-school" onclick="openPage('view-kuri', this)">KURI</div>
+                <div class="nav-tab section-school" onclick="openPage('view-koq', this)">KO-Q</div>
+                <div class="nav-tab section-school" onclick="openPage('view-hem', this)">HEM</div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT UNTUK FUNGSI KLIK -->
+    <script>
+        function openPage(pageId, element) {
+            // 1. Sembunyikan semua halaman
+            const allPages = document.querySelectorAll('.page-section');
+            allPages.forEach(page => {
+                page.classList.remove('active-view');
+            });
+
+            // 2. Buang status 'active' daripada semua tab
+            const allTabs = document.querySelectorAll('.nav-tab');
+            allTabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // 3. Tunjukkan halaman yang dipilih
+            const targetPage = document.getElementById(pageId);
+            if(targetPage) {
+                targetPage.classList.add('active-view');
+            }
+
+            // 4. Aktifkan tab yang ditekan
+            if(element) {
+                element.classList.add('active');
+            }
+        }
+    </script>
+</body>
+</html>
